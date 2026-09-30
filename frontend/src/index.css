@@ -1,0 +1,189 @@
+@import "tailwindcss";
+@import "@fontsource-variable/inter";
+
+/* Design tokens. Components use these through Tailwind names like
+   bg-surface, text-muted, border-line so both themes stay consistent. */
+:root,
+[data-theme="dark"] {
+  --bg: #09090b;
+  --surface: #111114;
+  --surface-2: #17171c;
+  --surface-3: #1e1e25;
+  --line: rgba(255, 255, 255, 0.07);
+  --line-strong: rgba(255, 255, 255, 0.13);
+  --text: #ededf0;
+  --muted: #a1a1ab;
+  --faint: #6b6b76;
+  --accent: #7c6cff;
+  --accent-2: #a78bfa;
+  --accent-soft: rgba(124, 108, 255, 0.14);
+  --accent-ink: #ffffff;
+  --success: #34d399;
+  --warning: #fbbf24;
+  --danger: #f87171;
+  --shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 8px 30px rgba(0, 0, 0, 0.35);
+  color-scheme: dark;
+}
+
+[data-theme="light"] {
+  --bg: #f7f7f9;
+  --surface: #ffffff;
+  --surface-2: #f3f3f6;
+  --surface-3: #ebebef;
+  --line: rgba(15, 15, 30, 0.08);
+  --line-strong: rgba(15, 15, 30, 0.15);
+  --text: #15151a;
+  --muted: #5d5d69;
+  --faint: #8e8e9a;
+  --accent: #5b4cf0;
+  --accent-2: #7c6cff;
+  --accent-soft: rgba(91, 76, 240, 0.1);
+  --accent-ink: #ffffff;
+  --success: #059669;
+  --warning: #d97706;
+  --danger: #dc2626;
+  --shadow: 0 1px 2px rgba(15, 15, 30, 0.04), 0 8px 24px rgba(15, 15, 30, 0.06);
+  color-scheme: light;
+}
+
+
+/* Accent colors (Settings → Appearance). Dark values first, then light. */
+[data-accent="violet"] { --accent: #7c6cff; --accent-2: #a78bfa; --accent-soft: rgba(124, 108, 255, 0.14); --accent-ink: #ffffff; }
+[data-accent="blue"] { --accent: #3b82f6; --accent-2: #60a5fa; --accent-soft: rgba(59, 130, 246, 0.14); --accent-ink: #ffffff; }
+[data-accent="emerald"] { --accent: #10b981; --accent-2: #34d399; --accent-soft: rgba(16, 185, 129, 0.14); --accent-ink: #04130d; }
+[data-accent="rose"] { --accent: #f43f5e; --accent-2: #fb7185; --accent-soft: rgba(244, 63, 94, 0.14); --accent-ink: #ffffff; }
+[data-accent="amber"] { --accent: #f59e0b; --accent-2: #fbbf24; --accent-soft: rgba(245, 158, 11, 0.14); --accent-ink: #1a1206; }
+[data-accent="graphite"] { --accent: #e4e4e7; --accent-2: #ffffff; --accent-soft: rgba(228, 228, 231, 0.14); --accent-ink: #09090b; }
+[data-theme="light"][data-accent="violet"] { --accent: #5b4cf0; --accent-2: #7c6cff; --accent-soft: rgba(91, 76, 240, 0.1); --accent-ink: #ffffff; }
+[data-theme="light"][data-accent="blue"] { --accent: #2563eb; --accent-2: #3b82f6; --accent-soft: rgba(37, 99, 235, 0.1); --accent-ink: #ffffff; }
+[data-theme="light"][data-accent="emerald"] { --accent: #047857; --accent-2: #059669; --accent-soft: rgba(4, 120, 87, 0.1); --accent-ink: #ffffff; }
+[data-theme="light"][data-accent="rose"] { --accent: #e11d48; --accent-2: #f43f5e; --accent-soft: rgba(225, 29, 72, 0.1); --accent-ink: #ffffff; }
+[data-theme="light"][data-accent="amber"] { --accent: #b45309; --accent-2: #d97706; --accent-soft: rgba(180, 83, 9, 0.1); --accent-ink: #ffffff; }
+[data-theme="light"][data-accent="graphite"] { --accent: #18181b; --accent-2: #3f3f46; --accent-soft: rgba(24, 24, 27, 0.1); --accent-ink: #ffffff; }
+
+@theme inline {
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-accent: var(--accent);
+  --color-accent-2: var(--accent-2);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-ink: var(--accent-ink);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-feature-settings: "cv11", "ss01", "ss03";
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+::selection {
+  background: var(--accent-soft);
+}
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+}
+button:focus-visible,
+a:focus-visible,
+[role="switch"]:focus-visible,
+[role="radio"]:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+.shadow-card {
+  box-shadow: var(--shadow);
+}
+.hero-glow {
+  background:
+    radial-gradient(600px 260px at 50% -40px, var(--accent-soft), transparent 70%),
+    radial-gradient(400px 200px at 80% 0%, rgba(167, 139, 250, 0.08), transparent 70%);
+}
+.grid-bg {
+  background-image:
+    linear-gradient(var(--line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--line) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(ellipse at 50% 0%, black 20%, transparent 70%);
+}
+.text-gradient {
+  background: linear-gradient(135deg, var(--text) 30%, var(--accent-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@keyframes shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, var(--surface-2) 0%, var(--surface-3) 50%, var(--surface-2) 100%);
+  background-size: 800px 100%;
+  animation: shimmer 1.4s infinite linear;
+}
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+.fade-up {
+  animation: fade-up 0.35s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+@keyframes progress-indeterminate {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(250%); }
+}
+.bar-indeterminate {
+  animation: progress-indeterminate 1.4s ease-in-out infinite;
+}
+.caret > :not(ul, ol, table):last-child::after,
+.caret > :is(ul, ol):last-child > li:last-child::after {
+  content: "";
+  display: inline-block;
+  width: 7px;
+  height: 1.05em;
+  margin-left: 2px;
+  vertical-align: -0.15em;
+  background: var(--accent);
+  border-radius: 2px;
+  animation: blink 1s steps(2) infinite;
+}
+@keyframes blink { 50% { opacity: 0; } }
+
+/* Markdown answers */
+.prose-pl { line-height: 1.7; font-size: 0.935rem; }
+.prose-pl > * + * { margin-top: 0.75em; }
+.prose-pl h1, .prose-pl h2, .prose-pl h3 { font-weight: 600; margin-top: 1.2em; letter-spacing: -0.01em; }
+.prose-pl h1 { font-size: 1.15rem; }
+.prose-pl h2 { font-size: 1.05rem; }
+.prose-pl h3 { font-size: 0.98rem; }
+.prose-pl ul { list-style: disc; padding-left: 1.2em; }
+.prose-pl ol { list-style: decimal; padding-left: 1.3em; }
+.prose-pl li + li { margin-top: 0.3em; }
+.prose-pl li::marker { color: var(--faint); }
+.prose-pl strong { color: var(--text); font-weight: 600; }
+.prose-pl code { background: var(--surface-3); padding: 0.1em 0.35em; border-radius: 5px; font-size: 0.86em; }
+.prose-pl blockquote { border-left: 2px solid var(--accent); padding-left: 0.9em; color: var(--muted); }
+.prose-pl table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+.prose-pl th, .prose-pl td { border: 1px solid var(--line-strong); padding: 0.4em 0.6em; text-align: left; }
+.prose-pl th { background: var(--surface-2); font-weight: 600; }
+.prose-pl a { color: var(--accent-2); text-decoration: underline; text-underline-offset: 2px; }

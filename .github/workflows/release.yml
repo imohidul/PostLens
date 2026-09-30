@@ -1,0 +1,130 @@
+# Builds the Windows installer and the macOS app, then publishes them on the
+# GitHub Releases page. Triggered by pushing a version tag:
+#   git tag v0.2.0
+#   git push origin v0.2.0
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing tag to (re)build, e.g. v0.2.0"
+        required: true
+
+permissions:
+  contents: write
+
+env:
+  TAG: ${{ github.event.inputs.tag || github.ref_name }}
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Check version matches tag
+        run: |
+          V=$(python3 -c "import re;print(re.search(r'__version__ = \"([^\"]+)\"', open('postlens/__init__.py').read()).group(1))")
+          if [ "v$V" != "$TAG" ]; then echo "::error::Tag $TAG does not match postlens/__init__.py version $V"; exit 1; fi
+      - uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ env.TAG }}
+          name: PostLens ${{ env.TAG }}
+          generate_release_notes: true
+          body: |
+            ## Download
+
+            | Your computer | File |
+            |---|---|
+            | **Windows 10/11** (64-bit) | `PostLens-Setup-*.exe` |
+            | **Mac with Apple Silicon** (M1 or newer) | `PostLens-*-macOS-AppleSilicon.dmg` |
+
+            First launch: Windows may show *"Windows protected your PC"* → **More info → Run anyway**.
+            macOS may say it can't verify the developer → **System Settings → Privacy & Security → Open Anyway**.
+            [Full install guide](https://github.com/imohidul/PostLens#install)
+
+  windows:
+    needs: create-release
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.TAG }}
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - name: Build UI
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt pyinstaller
+      - name: Build app
+        run: pyinstaller packaging/postlens.spec --noconfirm
+      - name: Smoke test (the packaged app starts and answers)
+        shell: pwsh
+        run: |
+          $env:POSTLENS_HOME = "$env:RUNNER_TEMP\pl-smoke"
+          $p = Start-Process -FilePath "dist\PostLens\PostLens.exe" -ArgumentList "--server","--port","8799" -PassThru
+          Start-Sleep -Seconds 20
+          $r = Invoke-RestMethod http://127.0.0.1:8799/api/status
+          Stop-Process -Id $p.Id -Force
+          if (-not $r.version) { throw "app did not start" }
+          Write-Host "PostLens $($r.version) started OK"
+      - name: Build installer
+        shell: pwsh
+        run: |
+          choco install innosetup -y --no-progress
+          $v = "$env:TAG".TrimStart("v")
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" "/DAppVersion=$v" packaging\windows\installer.iss
+      - uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ env.TAG }}
+          files: dist/PostLens-Setup-*.exe
+
+  macos:
+    needs: create-release
+    runs-on: macos-14  # Apple Silicon
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.TAG }}
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - name: Build UI
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt pyinstaller
+      - name: Build app
+        run: pyinstaller packaging/postlens.spec --noconfirm
+      - name: Smoke test (the packaged app starts and answers)
+        run: |
+          export POSTLENS_HOME="$RUNNER_TEMP/pl-smoke"
+          dist/PostLens.app/Contents/MacOS/PostLens --server --port 8799 &
+          PID=$!
+          sleep 20
+          curl -sf http://127.0.0.1:8799/api/status
+          kill "$PID" || true
+      - name: Build disk image
+        run: packaging/macos/make_dmg.sh "${TAG#v}"
+      - uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ env.TAG }}
+          files: dist/PostLens-*.dmg

@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "version": "2026.09.30",
+  "notes": "Recommended local models per hardware tier. Edit this file on GitHub to push new recommendations to every PostLens install (see README: Updating recommended models).",
+  "minimum": {
+    "ram_gb": 16,
+    "gpu_vram_gb": 8,
+    "apple_unified_gb": 16,
+    "free_disk_gb": 20
+  },
+  "tiers": [
+    {
+      "id": "standard",
+      "label": "Standard",
+      "min_vram_gb": 8,
+      "min_unified_gb": 16,
+      "min_ram_gb": 16,
+      "model": "qwen3.5:9b",
+      "name": "Qwen 3.5 9B",
+      "download_gb": 6.6,
+      "num_ctx": 16384,
+      "why": "Strong all-rounder that fits an 8 GB graphics card. Supports 200+ languages, including Bangla."
+    },
+    {
+      "id": "plus",
+      "label": "Plus",
+      "min_vram_gb": 12,
+      "min_unified_gb": 24,
+      "min_ram_gb": 16,
+      "model": "gemma4:12b",
+      "name": "Gemma 4 12B",
+      "download_gb": 7.6,
+      "num_ctx": 32768,
+      "why": "Newer, larger model with a long context window, so it can read more of a page or site per answer."
+    },
+    {
+      "id": "pro",
+      "label": "Pro",
+      "min_vram_gb": 24,
+      "min_unified_gb": 36,
+      "min_ram_gb": 32,
+      "model": "qwen3.8:27b",
+      "name": "Qwen 3.8 27B",
+      "download_gb": 18,
+      "num_ctx": 32768,
+      "why": "The strongest free model in this catalog for detailed analysis. Needs a high-end graphics card or a Mac with lots of memory."
+    }
+  ]
+}

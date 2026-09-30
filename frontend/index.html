@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en" data-theme="dark" data-accent="violet">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>PostLens</title>
+    <script>
+      // Set theme before first paint to avoid a flash of the wrong colors.
+      (function () {
+        var m = "system", a = "violet";
+        try { m = localStorage.getItem("pl-theme") || m; a = localStorage.getItem("pl-accent") || a; } catch (e) {}
+        if (m === "system") m = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        document.documentElement.dataset.theme = m;
+        document.documentElement.dataset.accent = a;
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

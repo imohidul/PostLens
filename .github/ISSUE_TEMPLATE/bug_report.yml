@@ -1,0 +1,40 @@
+name: Bug report
+description: Something isn't working
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: "Thanks for reporting! **Never include API keys, cookies or personal data.**"
+  - type: input
+    id: version
+    attributes:
+      label: PostLens version
+      description: Shown next to the logo in the sidebar
+      placeholder: "0.2.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options: [Windows 11, Windows 10, macOS (Apple Silicon), macOS (Intel, from source), Linux (from source)]
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options: [Installing / starting, Website analysis, Facebook collection, AI answers, Local AI, Settings / appearance, Other]
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What you did, what you expected, what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Log
+      description: Contents of the newest file in `.postlens/logs` (in your user folder), if any.
+      render: text

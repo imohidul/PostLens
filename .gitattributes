@@ -1,0 +1,9 @@
+# Keep line endings correct for each platform's scripts
+* text=auto
+*.bat text eol=crlf
+*.iss text eol=crlf
+*.sh  text eol=lf
+*.png binary
+*.ico binary
+*.icns binary
+*.woff2 binary

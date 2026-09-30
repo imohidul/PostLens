@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+
+# Node (the built UI in postlens/static IS committed so users don't need Node)
+frontend/node_modules/
+
+# Personal data and secrets - never commit
+.env
+.env.*
+secrets.json
+*.key
+.postlens/
+*.db
+*.db-wal
+*.db-shm
+browser-profile/
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Old build files moved aside (safe to delete)
+_to_delete/
