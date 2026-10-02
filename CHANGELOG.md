@@ -2,6 +2,14 @@
 
 All notable changes to PostLens are documented here. This project uses [semantic versioning](https://semver.org/).
 
+## [1.0.3] - 2026-10-02
+
+### Changed
+- UI build tools updated to Vite 8 (with the matching React and Tailwind plugins), and React Router to 7.18, which fixes two security advisories (open redirect, constructor injection) reported against older versions.
+
+### Fixed
+- Card titles such as "Recurring words" were cut off when the card was narrow; the buttons now move below the title instead.
+
 ## [1.0.2] - 2026-10-02
 
 ### Added

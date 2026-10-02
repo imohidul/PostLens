@@ -54,7 +54,7 @@ export function Card({ className, children, ...rest }: { className?: string; chi
 
 export function CardHeader({ title, subtitle, action, icon }: { title: ReactNode; subtitle?: ReactNode; action?: ReactNode; icon?: ReactNode }) {
   return (
-    <div className="flex items-start justify-between gap-4 px-5 pt-5 pb-3">
+    <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2 px-5 pt-5 pb-3">
       <div className="flex items-center gap-2.5 min-w-0">
         {icon && <span className="text-faint">{icon}</span>}
         <div className="min-w-0">
@@ -62,7 +62,7 @@ export function CardHeader({ title, subtitle, action, icon }: { title: ReactNode
           {subtitle && <p className="text-[13px] text-muted mt-0.5">{subtitle}</p>}
         </div>
       </div>
-      {action}
+      {action && <div className="shrink-0">{action}</div>}
     </div>
   );
 }

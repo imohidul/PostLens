@@ -6,6 +6,11 @@ updates:
   - package-ecosystem: npm
     directory: "/frontend"
     schedule: { interval: monthly }
+    groups:
+      # Vite and its plugins must move together: a Vite major on its own
+      # breaks `npm ci` (the plugins' peer ranges reject it).
+      vite:
+        patterns: ["vite", "@vitejs/*", "@tailwindcss/vite", "tailwindcss"]
   - package-ecosystem: github-actions
     directory: "/"
     schedule: { interval: monthly }
