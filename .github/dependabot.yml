@@ -11,6 +11,9 @@ updates:
       # breaks `npm ci` (the plugins' peer ranges reject it).
       vite:
         patterns: ["vite", "@vitejs/*", "@tailwindcss/vite", "tailwindcss"]
+      # react and react-dom (and their types) must always share a version.
+      react:
+        patterns: ["react", "react-dom", "@types/react", "@types/react-dom"]
   - package-ecosystem: github-actions
     directory: "/"
     schedule: { interval: monthly }

@@ -2,6 +2,11 @@
 
 All notable changes to PostLens are documented here. This project uses [semantic versioning](https://semver.org/).
 
+## [1.0.4] - 2026-10-02
+
+### Changed
+- The interface now runs on React 19 (`react`, `react-dom` and their type definitions upgraded together).
+
 ## [1.0.3] - 2026-10-02
 
 ### Changed
