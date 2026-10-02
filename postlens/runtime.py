@@ -36,13 +36,33 @@ def configure() -> None:
         sys.stderr = sys.stderr or log
 
 
+def _chromium_check() -> tuple[bool, str]:
+    """Is Playwright's Chromium on disk? Returns (installed, error text).
+
+    Runs in its own short-lived thread: Playwright's sync API refuses to start
+    in a thread that is already running Playwright (e.g. when this is called
+    from inside a `with sync_playwright()` block), and that refusal used to be
+    misread as "not installed"."""
+    result = {"ok": False, "err": ""}
+
+    def check():
+        try:
+            from playwright.sync_api import sync_playwright
+            with sync_playwright() as p:
+                result["ok"] = Path(p.chromium.executable_path).exists()
+                if not result["ok"]:
+                    result["err"] = f"Chromium not found at {p.chromium.executable_path}"
+        except Exception as e:  # noqa: BLE001
+            result["err"] = f"{type(e).__name__}: {e}"
+
+    t = threading.Thread(target=check, name="browser-check", daemon=True)
+    t.start()
+    t.join(timeout=60)
+    return result["ok"], result["err"]
+
+
 def _chromium_installed() -> bool:
-    try:
-        from playwright.sync_api import sync_playwright
-        with sync_playwright() as p:
-            return Path(p.chromium.executable_path).exists()
-    except Exception:
-        return False
+    return _chromium_check()[0]
 
 
 def ensure_browser(on_status=None) -> None:
@@ -64,8 +84,15 @@ def ensure_browser(on_status=None) -> None:
         kw = {"creationflags": 0x08000000} if sys.platform == "win32" else {}  # no console flash
         r = subprocess.run([node, cli, "install", "chromium"], env=get_driver_env(),
                            capture_output=True, text=True, timeout=1800, **kw)
-        if r.returncode != 0 or not _chromium_installed():
-            state.update(browser="error", message="Couldn't download the browser engine. Check your internet connection.")
-            (LOG_DIR / "browser-install.log").write_text((r.stdout or "") + "\n" + (r.stderr or ""), encoding="utf-8")
+        ok, err = (False, "") if r.returncode != 0 else _chromium_check()
+        if not ok:
+            if r.returncode != 0:
+                msg = "Couldn't download the browser engine. Check your internet connection."
+            else:
+                msg = "The browser engine is installed but couldn't be started. See ~/.postlens/logs/browser-install.log"
+            state.update(browser="error", message=msg)
+            (LOG_DIR / "browser-install.log").write_text(
+                f"exit code: {r.returncode}\ncheck error: {err}\n\n--- stdout ---\n{r.stdout or ''}\n--- stderr ---\n{r.stderr or ''}\n",
+                encoding="utf-8")
             raise RuntimeError(state["message"])
         state.update(browser="ready", message="")

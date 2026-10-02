@@ -1,5 +1,5 @@
 ; Inno Setup script for the PostLens Windows installer.
-; Built by GitHub Actions:  iscc /DAppVersion=0.2.0 packaging\windows\installer.iss
+; Built by GitHub Actions:  iscc /DAppVersion=1.0.1 packaging\windows\installer.iss
 ; Installs per-user (no administrator rights needed), adds a Start menu entry,
 ; an optional desktop shortcut, and a normal uninstaller.
 
@@ -21,7 +21,7 @@ DefaultGroupName=PostLens
 DisableProgramGroupPage=yes
 PrivilegesRequired=lowest
 OutputDir=..\..\dist
-OutputBaseFilename=PostLens-Setup-{#AppVersion}
+OutputBaseFilename=postlens
 SetupIconFile=..\icons\icon.ico
 UninstallDisplayIcon={app}\PostLens.exe
 Compression=lzma2/max

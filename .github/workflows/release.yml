@@ -1,7 +1,7 @@
 # Builds the Windows installer and the macOS app, then publishes them on the
 # GitHub Releases page. Triggered by pushing a version tag:
-#   git tag v0.2.0
-#   git push origin v0.2.0
+#   git tag v1.0.1
+#   git push origin v1.0.1
 name: Release
 
 on:
@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Existing tag to (re)build, e.g. v0.2.0"
+        description: "Existing tag to (re)build, e.g. v1.0.1"
         required: true
 
 permissions:
@@ -38,8 +38,8 @@ jobs:
 
             | Your computer | File |
             |---|---|
-            | **Windows 10/11** (64-bit) | `PostLens-Setup-*.exe` |
-            | **Mac with Apple Silicon** (M1 or newer) | `PostLens-*-macOS-AppleSilicon.dmg` |
+            | **Windows 10/11** (64-bit) | `postlens.exe` |
+            | **Mac with Apple Silicon** (M1 or newer) | `postlens.dmg` |
 
             First launch: Windows may show *"Windows protected your PC"* → **More info → Run anyway**.
             macOS may say it can't verify the developer → **System Settings → Privacy & Security → Open Anyway**.
@@ -88,7 +88,8 @@ jobs:
       - uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ env.TAG }}
-          files: dist/PostLens-Setup-*.exe
+          files: dist/postlens.exe
+          fail_on_unmatched_files: true
 
   macos:
     needs: create-release
@@ -123,8 +124,9 @@ jobs:
           curl -sf http://127.0.0.1:8799/api/status
           kill "$PID" || true
       - name: Build disk image
-        run: packaging/macos/make_dmg.sh "${TAG#v}"
+        run: bash packaging/macos/make_dmg.sh "${TAG#v}"
       - uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ env.TAG }}
-          files: dist/PostLens-*.dmg
+          files: dist/postlens.dmg
+          fail_on_unmatched_files: true

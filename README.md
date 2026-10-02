@@ -115,7 +115,7 @@ PostLens detects your graphics card, video memory, RAM and disk space itself (Se
 
 ### Windows 10 / 11
 
-1. Download **`PostLens-Setup-x.y.z.exe`** from the [latest release](https://github.com/imohidul/PostLens/releases/latest).
+1. Download **`postlens.exe`** from the [latest release](https://github.com/imohidul/PostLens/releases/latest).
 2. Double-click it and follow the steps. No administrator rights needed. You can add a desktop shortcut.
 3. Open **PostLens** from the Start menu.
 
@@ -123,7 +123,7 @@ PostLens detects your graphics card, video memory, RAM and disk space itself (Se
 
 ### Mac (Apple Silicon: M1 or newer)
 
-1. Download **`PostLens-x.y.z-macOS-AppleSilicon.dmg`** from the [latest release](https://github.com/imohidul/PostLens/releases/latest).
+1. Download **`postlens.dmg`** from the [latest release](https://github.com/imohidul/PostLens/releases/latest).
 2. Open it and drag **PostLens** into **Applications**.
 3. Open PostLens. The first time, macOS says it can't verify the developer, because the app isn't notarized by Apple yet. Go to **System Settings → Privacy & Security**, scroll down, and click **Open Anyway**. You only need to do this once.
 
@@ -321,8 +321,8 @@ npm run build
 1. Update the version in `postlens/__init__.py`, `pyproject.toml` and `frontend/package.json`, and add notes to `CHANGELOG.md`.
 2. Commit, then tag and push:
    ```bash
-   git tag v0.2.0
-   git push origin v0.2.0
+   git tag v1.0.1
+   git push origin v1.0.1
    ```
 3. GitHub Actions ([`release.yml`](.github/workflows/release.yml)) builds the Windows installer and the Mac disk image, checks that each one starts, and attaches them to a new release on the [Releases](https://github.com/imohidul/PostLens/releases) page. This takes about 15–20 minutes.
 

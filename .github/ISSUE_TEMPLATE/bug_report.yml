@@ -10,7 +10,7 @@ body:
     attributes:
       label: PostLens version
       description: Shown next to the logo in the sidebar
-      placeholder: "0.2.0"
+      placeholder: "1.0.1"
     validations:
       required: true
   - type: dropdown

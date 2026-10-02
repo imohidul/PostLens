@@ -2,7 +2,17 @@
 
 All notable changes to PostLens are documented here. This project uses [semantic versioning](https://semver.org/).
 
-## [0.2.0] - 2026-10-01
+## [1.0.1] - 2026-10-02
+
+### Fixed
+- **"Couldn't download the browser engine" on Windows** even with a working internet connection. The check for an installed browser engine failed when it ran inside an open browser session (connecting Facebook, checking login), so PostLens wrongly thought the engine was missing. The error message now shows the real reason, and the details go to `~/.postlens/logs/browser-install.log`.
+- The app now shows the correct version number.
+- The Mac disk image is built and attached to the release again.
+
+### Changed
+- Download files are now simply named `postlens.exe` (Windows) and `postlens.dmg` (Mac).
+
+## [1.0.0] - 2026-10-01
 
 ### Added
 - **Website analysis.** Analyze any website (one page or up to 200 pages): sitemap discovery, `robots.txt` compliance, JavaScript rendering when needed, and main-content extraction with Trafilatura.
