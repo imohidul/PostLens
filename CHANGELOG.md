@@ -2,6 +2,11 @@
 
 All notable changes to PostLens are documented here. This project uses [semantic versioning](https://semver.org/).
 
+## [1.0.2] - 2026-10-02
+
+### Added
+- **Automatic updates.** PostLens checks GitHub for new versions in the background (at startup and every few hours), downloads the update, verifies it against the checksum GitHub publishes, and installs it when you close the app. A sidebar notice offers **Restart to update** if you want it right away. Turn this off or check manually in **Settings → Updates**.
+
 ## [1.0.1] - 2026-10-02
 
 ### Fixed

@@ -4,6 +4,7 @@ from __future__ import annotations
 import csv
 import io
 import json
+import os
 import re
 import threading
 from urllib.parse import urlparse
@@ -18,7 +19,7 @@ from fastapi.responses import FileResponse, JSONResponse, Response, StreamingRes
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from . import __version__, analytics, db, hardware, jobs, keystore
+from . import __version__, analytics, db, hardware, jobs, keystore, updater
 from .ai import assistant, local, providers
 from .config import load_settings, public_settings, save_settings
 from .demo import create_demo
@@ -35,6 +36,7 @@ async def _lifespan(_app: FastAPI):
     threading.Thread(target=_refresh_fb, daemon=True).start()
     threading.Thread(target=local.refresh_catalog, daemon=True).start()  # newer model recommendations
     threading.Thread(target=hardware.detect, daemon=True).start()        # warm the hardware cache
+    updater.start_background()                                           # new app versions
     yield
 
 
@@ -105,6 +107,44 @@ def put_settings(patch: dict[str, Any]) -> dict[str, Any]:
     if "provider" in ai and ai["provider"] not in providers.PROVIDERS:
         raise HTTPException(400, "Unknown AI provider")
     return public_settings(save_settings(patch))
+
+
+# ---------------------------------------------------------------- app updates
+
+@app.get("/api/update")
+def update_state() -> dict[str, Any]:
+    return updater.public_state()
+
+
+@app.post("/api/update/check")
+def update_check() -> dict[str, Any]:
+    updater.check()
+    s = updater.state
+    if s["available"] and s["can_install"] and s["status"] != "ready" and updater.auto_enabled():
+        threading.Thread(target=updater.download, daemon=True).start()
+    return updater.public_state()
+
+
+@app.post("/api/update/download")
+def update_download() -> dict[str, Any]:
+    if not updater.state["can_install"]:
+        raise HTTPException(400, "This copy of PostLens can't update itself. Download the new version from GitHub.")
+    threading.Thread(target=updater.download, daemon=True).start()
+    return updater.public_state()
+
+
+@app.post("/api/update/install")
+def update_install() -> dict[str, Any]:
+    """Restart PostLens into the downloaded update."""
+    if jobs.active():
+        raise HTTPException(409, "An analysis is still running. Update when it has finished.")
+    if updater.state["status"] != "ready":
+        raise HTTPException(409, "The update hasn't finished downloading yet.")
+    if not updater.start_installer(relaunch=True):
+        raise HTTPException(500, updater.state["error"] or "Couldn't start the update.")
+    # Quit shortly after answering, so the installer can replace the app.
+    threading.Timer(1.5, os._exit, args=(0,)).start()
+    return updater.public_state()
 
 
 # ---------------------------------------------------------------- facebook

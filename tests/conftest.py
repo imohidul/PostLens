@@ -4,3 +4,4 @@ import os
 import tempfile
 
 os.environ["POSTLENS_HOME"] = tempfile.mkdtemp(prefix="postlens-test-")
+os.environ["POSTLENS_NO_UPDATE_CHECK"] = "1"  # tests never call GitHub

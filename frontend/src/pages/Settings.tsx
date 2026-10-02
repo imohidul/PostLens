@@ -11,13 +11,14 @@ import { Badge, Button, Card, Input, Segmented, Skeleton, Toggle } from "../comp
 import { FacebookGlyph } from "../components/Logo";
 import { ACCENTS, type ThemeMode } from "../lib/theme";
 
-type Section = "ai" | "appearance" | "facebook" | "collection" | "privacy";
+type Section = "ai" | "appearance" | "facebook" | "collection" | "updates" | "privacy";
 
 const SECTIONS: { id: Section; label: string; icon: ReactNode }[] = [
   { id: "ai", label: "AI assistant", icon: <Sparkles className="size-4" /> },
   { id: "appearance", label: "Appearance", icon: <Palette className="size-4" /> },
   { id: "facebook", label: "Facebook account", icon: <FacebookGlyph className="size-4" /> },
   { id: "collection", label: "Collection", icon: <SlidersHorizontal className="size-4" /> },
+  { id: "updates", label: "Updates", icon: <RefreshCw className="size-4" /> },
   { id: "privacy", label: "Data & privacy", icon: <ShieldCheck className="size-4" /> },
 ];
 
@@ -64,6 +65,8 @@ export default function Settings() {
             <FacebookSection />
           ) : section === "collection" ? (
             <CollectionSection s={s} setS={setS} />
+          ) : section === "updates" ? (
+            <UpdatesSection s={s} setS={setS} />
           ) : (
             <PrivacySection />
           )}
@@ -792,6 +795,99 @@ function CollectionSection({ s, setS }: { s: S; setS: (s: S) => void }) {
         </Row>
       </Card>
       <div className="mt-6 mb-2 text-sm font-semibold">Facebook</div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ Updates */
+
+function UpdatesSection({ s, setS }: { s: S; setS: (s: S) => void }) {
+  const { update, setUpdate, refreshUpdate, toast } = useApp();
+  const [checking, setChecking] = useState(false);
+  const [restarting, setRestarting] = useState(false);
+  const auto = s.updates?.auto ?? true;
+
+  const checkNow = async () => {
+    setChecking(true);
+    try {
+      const u = await api.updateCheck();
+      setUpdate(u);
+      if (u.status === "error") toast(u.error, "error");
+      else if (!u.available) toast(`You have the latest version (${u.current}).`, "success");
+    } catch (e) {
+      toast((e as Error).message, "error");
+    } finally {
+      setChecking(false);
+    }
+  };
+  const setAuto = async (v: boolean) => {
+    try {
+      setS(await api.saveSettings({ updates: { auto: v } }));
+      await refreshUpdate();
+      toast(v ? "Updates will install automatically" : "Automatic updates turned off", "success");
+    } catch (e) {
+      toast((e as Error).message, "error");
+    }
+  };
+  const restart = async () => {
+    setRestarting(true);
+    try {
+      setUpdate(await api.updateInstall());
+    } catch (e) {
+      toast((e as Error).message, "error");
+      setRestarting(false);
+    }
+  };
+
+  const status = !update
+    ? "…"
+    : update.available
+      ? update.status === "downloading"
+        ? `Downloading ${update.latest}… ${Math.round(update.progress * 100)}%`
+        : update.status === "ready"
+          ? `Version ${update.latest} is downloaded and ready to install.`
+          : `Version ${update.latest} is available.`
+      : update.checked_at
+        ? "You have the latest version."
+        : update.status === "error"
+          ? update.error
+          : "Not checked yet.";
+
+  return (
+    <div>
+      <Header title="Updates" desc="PostLens checks GitHub for new versions in the background and keeps itself up to date." />
+      <Card className="divide-y divide-line">
+        <Row label={`PostLens ${update?.current ?? ""}`} hint={status}>
+          <div className="flex items-center gap-2">
+            {update?.available && update.status === "ready" && update.can_install && (
+              <Button size="sm" variant="primary" loading={restarting} onClick={restart}>
+                Restart to update
+              </Button>
+            )}
+            <Button size="sm" icon={<RefreshCw className="size-3.5" />} loading={checking} onClick={checkNow}>
+              Check now
+            </Button>
+          </div>
+        </Row>
+        <Row
+          label="Install updates automatically"
+          hint="Downloads new versions in the background and installs them when you close PostLens. Your analyses and settings are kept."
+        >
+          <Toggle checked={auto} onChange={setAuto} label="Install updates automatically" />
+        </Row>
+        {update?.available && (
+          <Row label="What's new" hint={`Release notes for version ${update.latest}.`}>
+            <a href={update.page_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-sm text-accent-2 hover:underline">
+              Open <ExternalLink className="size-3.5" />
+            </a>
+          </Row>
+        )}
+      </Card>
+      {update && !update.can_install && update.available && (
+        <p className="text-[12.5px] text-muted mt-3 leading-relaxed">
+          This copy of PostLens can't replace itself (it is running from source, or the app folder isn't writable), so download the new version from GitHub.
+        </p>
+      )}
     </div>
   );
 }

@@ -49,6 +49,15 @@ Name: "{autodesktop}\PostLens"; Filename: "{app}\PostLens.exe"; Tasks: desktopic
 
 [Run]
 Filename: "{app}\PostLens.exe"; Description: "{cm:LaunchProgram,PostLens}"; Flags: nowait postinstall skipifsilent
+; Automatic updates run this installer silently with /RELAUNCH=1, then reopen PostLens.
+Filename: "{app}\PostLens.exe"; Flags: nowait; Check: ShouldRelaunch
 
 ; Your data (~\.postlens: analyses, settings, downloaded models) is kept on
 ; uninstall on purpose, so reinstalling or updating never loses it.
+
+[Code]
+// True only for a silent install started by PostLens's updater with /RELAUNCH=1.
+function ShouldRelaunch: Boolean;
+begin
+  Result := WizardSilent and (ExpandConstant('{param:RELAUNCH|0}') = '1');
+end;

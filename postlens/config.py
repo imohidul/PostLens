@@ -44,6 +44,8 @@ DEFAULT_SETTINGS: dict[str, Any] = {
         "delay_s": 0.5,
     },
     "ui": {"theme": "system", "accent": "violet"},
+    # Install new versions of the desktop app automatically (Settings → Updates)
+    "updates": {"auto": True},
 }
 
 _lock = threading.Lock()

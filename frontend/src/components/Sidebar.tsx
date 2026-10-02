@@ -1,9 +1,11 @@
 import clsx from "clsx";
-import { Moon, Plus, Settings, Sun, Sparkles, Database } from "lucide-react";
+import { useState } from "react";
+import { ArrowUpCircle, Moon, Plus, Settings, Sun, Sparkles, Database } from "lucide-react";
+import { api } from "../api";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useApp, toneFor } from "../store";
 import { LogoMark } from "./Logo";
-import { StatusDot } from "./ui";
+import { Button, StatusDot } from "./ui";
 import { timeAgo, hostPath } from "../lib/format";
 
 export function Sidebar() {
@@ -67,6 +69,7 @@ export function Sidebar() {
       </nav>
 
       <div className="border-t border-line p-3 space-y-1">
+        <UpdateBanner />
         <NavLink
           to="/settings"
           className={({ isActive }) =>
@@ -94,5 +97,76 @@ export function Sidebar() {
         </div>
       </div>
     </aside>
+  );
+}
+
+/** Shows a new version of PostLens: downloading, ready to install, or (when
+ * this copy can't update itself) a link to the download page. */
+function UpdateBanner() {
+  const { update, setUpdate, toast } = useApp();
+  const [busy, setBusy] = useState(false);
+  if (!update?.available || !update.latest) return null;
+
+  const restart = async () => {
+    setBusy(true);
+    try {
+      setUpdate(await api.updateInstall());
+      toast("Restarting into the new version…", "info");
+    } catch (e) {
+      toast((e as Error).message, "error");
+      setBusy(false);
+    }
+  };
+  const download = async () => {
+    try {
+      setUpdate(await api.updateDownload());
+    } catch (e) {
+      toast((e as Error).message, "error");
+    }
+  };
+
+  let body: React.ReactNode;
+  if (update.status === "installing") {
+    body = <p className="text-[12px] text-muted mt-1">Installing… PostLens will reopen in a moment.</p>;
+  } else if (update.status === "ready" && update.can_install) {
+    body = (
+      <>
+        <p className="text-[12px] text-muted mt-1 leading-relaxed">Installs when you close PostLens.</p>
+        <Button size="sm" variant="primary" className="w-full mt-2" loading={busy} onClick={restart}>
+          Restart to update
+        </Button>
+      </>
+    );
+  } else if (update.status === "downloading") {
+    body = (
+      <>
+        <p className="text-[12px] text-muted mt-1">Downloading… {Math.round(update.progress * 100)}%</p>
+        <div className="mt-1.5 h-1 rounded-full bg-surface-3 overflow-hidden">
+          <div className="h-full bg-accent transition-[width]" style={{ width: `${Math.round(update.progress * 100)}%` }} />
+        </div>
+      </>
+    );
+  } else if (update.can_install) {
+    body = (
+      <Button size="sm" className="w-full mt-2" onClick={download}>
+        Download update
+      </Button>
+    );
+  } else {
+    body = (
+      <a href={update.page_url} target="_blank" rel="noreferrer" className="block text-[12px] text-accent-2 hover:underline mt-1">
+        Download from GitHub
+      </a>
+    );
+  }
+
+  return (
+    <div className="mb-2 rounded-lg border border-line-strong bg-surface-2 p-2.5">
+      <div className="flex items-center gap-1.5 text-[13px] font-medium">
+        <ArrowUpCircle className="size-4 text-accent-2" />
+        {update.status === "ready" ? `Update ${update.latest} ready` : `PostLens ${update.latest} is available`}
+      </div>
+      {body}
+    </div>
   );
 }

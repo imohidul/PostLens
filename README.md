@@ -129,6 +129,12 @@ PostLens detects your graphics card, video memory, RAM and disk space itself (Se
 
 Intel Macs can [run from source](#run-from-source).
 
+### Updates
+
+PostLens updates itself. It checks for new versions in the background, downloads them, and installs them when you close the app; a notice in the sidebar lets you **Restart to update** right away. You can turn this off or check manually in **Settings → Updates**. Your analyses and settings are kept.
+
+> Versions before 1.0.2 can't update themselves: install 1.0.2 once by hand and every later version arrives automatically.
+
 ### First launch
 
 - PostLens opens in its own window. Everything it stores lives in a `.postlens` folder in your user folder, so uninstalling or updating never deletes your analyses.

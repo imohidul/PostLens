@@ -202,6 +202,23 @@ export interface Settings {
     default_range_days: number;
   };
   ui: { theme: "system" | "light" | "dark"; accent: "violet" | "blue" | "emerald" | "rose" | "amber" | "graphite" };
+  updates: { auto: boolean };
+}
+
+export interface UpdateState {
+  current: string;
+  latest: string | null;
+  available: boolean;
+  status: "idle" | "checking" | "downloading" | "ready" | "installing" | "error";
+  progress: number;
+  error: string;
+  checked_at: number | null;
+  notes: string;
+  page_url: string;
+  /** this copy is the installed app and can replace itself */
+  can_install: boolean;
+  /** Settings → Updates → install automatically */
+  auto: boolean;
 }
 
 export interface Chat {
@@ -258,6 +275,11 @@ export const api = {
   status: () => req<{ version: string; facebook: FacebookState; jobs: Job[] }>("/api/status"),
   settings: () => req<Settings>("/api/settings"),
   saveSettings: (patch: unknown) => req<Settings>("/api/settings", { method: "PUT", body: JSON.stringify(patch) }),
+
+  update: () => req<UpdateState>("/api/update"),
+  updateCheck: () => req<UpdateState>("/api/update/check", { method: "POST" }),
+  updateDownload: () => req<UpdateState>("/api/update/download", { method: "POST" }),
+  updateInstall: () => req<UpdateState>("/api/update/install", { method: "POST" }),
 
   fbStatus: (refresh = false) => req<FacebookState>(`/api/facebook/status${refresh ? "?refresh=true" : ""}`),
   fbLogin: () => req<FacebookState>("/api/facebook/login", { method: "POST" }),

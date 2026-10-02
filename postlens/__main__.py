@@ -111,6 +111,7 @@ def main() -> None:
         # Closing the app window quits PostLens.
         server.should_exit = True
         thread.join(timeout=5)
+        _install_pending_update()
         return
     else:
         webbrowser.open(url)
@@ -120,6 +121,16 @@ def main() -> None:
             thread.join(0.5)
     except KeyboardInterrupt:
         server.should_exit = True
+    _install_pending_update()
+
+
+def _install_pending_update() -> None:
+    """A downloaded update is installed quietly when PostLens closes."""
+    try:
+        from . import updater
+        updater.install_on_exit()
+    except Exception:  # noqa: BLE001 - never block quitting
+        pass
 
 
 if __name__ == "__main__":

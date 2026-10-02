@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { CheckCircle2, AlertTriangle, Info, X } from "lucide-react";
-import { api, type AIStatus, type Dataset, type FacebookState } from "./api";
+import { api, type AIStatus, type Dataset, type FacebookState, type UpdateState } from "./api";
 import { apply, onSystemChange, resolve, stored, type Accent, type ThemeMode } from "./lib/theme";
 
 type Toast = { id: number; tone: "success" | "error" | "info"; text: string };
@@ -10,6 +10,10 @@ interface AppState {
   facebook: FacebookState | null;
   ai: AIStatus | null;
   version: string;
+  /** new versions of PostLens (see postlens/updater.py) */
+  update: UpdateState | null;
+  refreshUpdate: () => Promise<void>;
+  setUpdate: (u: UpdateState) => void;
   refreshDatasets: () => Promise<void>;
   refreshFacebook: (deep?: boolean) => Promise<void>;
   refreshAI: () => Promise<void>;
@@ -31,6 +35,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [facebook, setFacebook] = useState<FacebookState | null>(null);
   const [ai, setAI] = useState<AIStatus | null>(null);
   const [version, setVersion] = useState("");
+  const [update, setUpdate] = useState<UpdateState | null>(null);
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [themeMode, setThemeModeState] = useState<ThemeMode>(stored().mode);
   const [accent, setAccentState] = useState<Accent>(stored().accent);
@@ -65,6 +70,31 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const refreshUpdate = useCallback(async () => {
+    try {
+      setUpdate(await api.update());
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  // Follow update progress: quickly while something is happening, otherwise
+  // every few minutes (the app itself checks GitHub every few hours).
+  useEffect(() => {
+    const busy = update && ["checking", "downloading", "installing"].includes(update.status);
+    const t = setTimeout(refreshUpdate, busy ? 1500 : update ? 5 * 60_000 : 8000);
+    return () => clearTimeout(t);
+  }, [update, refreshUpdate]);
+
+  // Tell the user once when an update has finished downloading.
+  const announced = useRef("");
+  useEffect(() => {
+    if (update?.status === "ready" && update.latest && announced.current !== update.latest) {
+      announced.current = update.latest;
+      toast(`PostLens ${update.latest} is ready. It installs when you close PostLens, or restart now from the sidebar.`, "success");
+    }
+  }, [update, toast]);
+
   // Apply theme; follow the OS when mode is "system".
   useEffect(() => {
     apply(themeMode, accent);
@@ -97,7 +127,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }).catch(() => {});
     refreshDatasets();
     refreshAI();
-  }, [refreshDatasets, refreshAI]);
+    refreshUpdate();
+  }, [refreshDatasets, refreshAI, refreshUpdate]);
 
   // While a Facebook check or login is in progress, keep polling it.
   useEffect(() => {
@@ -108,7 +139,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   return (
     <Ctx.Provider
-      value={{ datasets, facebook, ai, version, refreshDatasets, refreshFacebook, refreshAI, setFacebook, toast, themeMode, theme, accent, setThemeMode, setAccent }}
+      value={{ datasets, facebook, ai, version, update, refreshUpdate, setUpdate, refreshDatasets, refreshFacebook, refreshAI, setFacebook, toast, themeMode, theme, accent, setThemeMode, setAccent }}
     >
       {children}
       <div className="fixed bottom-5 right-5 z-50 flex flex-col gap-2 w-[360px] max-w-[calc(100vw-2rem)]">
